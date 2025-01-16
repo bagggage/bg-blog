@@ -197,9 +197,9 @@ Here, a pointer to a value refers to a pointer to the `Variant::_data` field. Th
 ||changeable|allocatable|source|
 |---|---|---|---|
 |constant| **NO** | **YES** (in `constants` vector) | *immediate*/*memory* |
+|function argument| **VALUE** | **NO** | *memory* |
 |local| **VALUE** | **YES** (on a stack) | *registers*/*memory* |
 |temporary| **TYPE** and **VALUE** | **YES** | *registers*/*memory* |
-|function argument| **NO** (?) | **NO** | *memory* |
 |external| **VALUE** (?) | **NO** | *memory* |
 
 The primary idea of lazy loading is as follows:
@@ -231,4 +231,4 @@ During the development of the code generator, I have not yet completed the nativ
 
 ## What about the implementation?
 
-At the moment, I have some code, but I often experiment and change approaches, so it is more of a draft for now. I am currently refactoring it and writing a cleaner version. If you are interested, [the repository](https://github.com/bagggage/godot/tree/gdscript_jit) is available on GitHub. I will try to update it as often as possible and keep it up to date. It already includes `bunny-jit`, and you just need to perform a standard Godot build. All the main code is located in the `gdscript_jit_*.*` files. Enjoy studying it! :)
+At the moment, I have some code, but I often experiment and change approaches, so it is more of a draft for now. I am currently refactoring it and writing a cleaner version. If you are interested, [the repository](https://github.com/bagggage/godot/tree/gdscript_jit) is available on GitHub. I will try to update it as often as possible and keep it up to date. It already includes `bunny-jit`, and you just need to perform a standard Godot build. All jit specific code is located in the `modules/gdscript/gdscript_jit_*.*` files. Enjoy studying it! :)
