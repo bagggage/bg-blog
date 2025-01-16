@@ -1,0 +1,24 @@
+:root {
+    --bordercl: dodgerblue;
+}
+
+::selection {
+    background: black;
+}
+
+header .main {
+    font-weight: bold;
+    font-size: 1.8rem;
+}
+
+footer {
+    border-top-style: dashed;
+}
+
+blockquote {
+    border-color: var(--bordercl)
+}
+
+hr {
+    border-top-color: var(--bordercl);
+}

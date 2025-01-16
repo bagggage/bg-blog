@@ -1,0 +1,23 @@
+baseURL = 'https://example.org/'
+languageCode = "en-us"
+title = "@bagggage-dev-blog"
+theme = "archie"
+
+[params]
+    mode="dark"
+	customcss = ["css/index.css"]
+
+[[params.social]]
+name = "GitHub"
+icon = "github"
+url = "https://github.com/bagggage"
+
+[[menu.main]]
+name = "Posts"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "GitHub"
+url = "https://github.com/bagggage"
+weight = 2
