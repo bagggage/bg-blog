@@ -1,7 +1,7 @@
 +++
 date = '2025-01-16T16:32:43+03:00'
 title = 'GDScript codegen research: 01'
-tags = ['godot','jit']
+tags = ['gdscript','asm','c++','jit']
 +++
 
 # Foreword
