@@ -198,7 +198,7 @@ The current set of VM opcodes:
  18: set_member ["position"] = stack(3)
 ```
 
-Once again, we observe unnecessary copying of `position` into `stack(3)`. Now, let's focus on field access for `y`. For the VM, this code is quite costly because it constructs temporary objects on the stack. With JIT, if the value of field `y` is accessed via a pointer, even when using `add_temporary`, lazy allocation of `Variant` ensures that all operations are performed directly in processor registers and the result is then stored back into memory. However... wait... not immediately. The compiler forces us to first save the new `y` in our temporary copy and then assign it back to `position`.
+Now, let's focus on field access for `y`. For the VM, this code is quite costly because it constructs temporary objects on the stack. With JIT, if the value of field `y` is accessed via a pointer (just pointer to `Vector3` struct + offset to field `y`), lazy allocation of `Variant` ensures that all operations are performed directly in processor registers and the result is then stored back into memory. However... wait... not immediately. The compiler forces us to first save the new `y` in our temporary copy and then assign it back to `position`.
 
 However, there's a small caveat. `Vector3`, like `Vector4` and `Vector2`, contains fields of type `float`, while `Variant::FLOAT` is represented as `double`. This needs to be accounted for, and it may result in the generation of several overhead instructions for converting `float` to `double` and back. This is not ideal, but unavoidable.
 
