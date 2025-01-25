@@ -8,13 +8,13 @@ tags = ['gdscript','asm','c++','jit']
 
 In the previous post, I briefly described `stage 2` but left out many important aspects, such as loops, arrays, and branching. Why? Because each of these subtopics represents a significant amount of work. I also consider all these subtopics part of `stage 2`, and as development progresses, I will delve deeper into this topic and enhance the code generation to support all these features in the JIT compiler.
 
-> While branching with `if`/`else` is relatively straightforward to implement, we’ll discuss this in more detail next time.
+> While branching with `if`/`else` is relatively straightforward to implement, we'll discuss this in more detail next time.
 
 In this post, I will continue the discussion of trivial (or not-so-trivial) structures, including field access, method calls, and specialized operators.
 
 # Overview of JIT API/ABI
 
-Let’s start with a quick breakdown of the current code generator implementation.
+Let's start with a quick breakdown of the current code generator implementation.
 
 ## JIT-Compiled Function
 
@@ -24,10 +24,10 @@ The current implementation assumes the compilation of a function that uses a C++
 void jit_func(Object* p_script_instance, Variant* p_members, const Variant* p_constants, const Variant** p_args);
 ```
 
-- `p_script_instance`: A pointer to the `Object` retrieved as `p_instance->owner` from `gdscript_vm.cpp`. It’s used for calling instance methods, accessing fields, and more.
-- `p_members`: A pointer to the array of all members of the current `GDScriptInstance`. This speeds up addressing the required member in the script since the position (index) of the desired field is known in advance. This includes only fields declared within the script (if I’m not mistaken).
+- `p_script_instance`: A pointer to the `Object` retrieved as `p_instance->owner` from `gdscript_vm.cpp`. It's used for calling instance methods, accessing fields, and more.
+- `p_members`: A pointer to the array of all members of the current `GDScriptInstance`. This speeds up addressing the required member in the script since the position (index) of the desired field is known in advance. This includes only fields declared within the script (if I'm not mistaken).
 - `p_constants`: A pointer to an array of constants that, one way or another, require their address to be taken within the function.
-- `p_args`: An array of pointers to the function arguments. This is a common approach in Godot’s codebase for making generalized function calls, where the types and arguments are only known at runtime.
+- `p_args`: An array of pointers to the function arguments. This is a common approach in Godot's codebase for making generalized function calls, where the types and arguments are only known at runtime.
 
 ## Code Generator
 
@@ -36,8 +36,8 @@ All its code is located in [`modules/gdscript/gdscript_jit_codegen.*`](https://g
 As mentioned in the previous post, I implemented the `ValueRef` structure, which stores all the necessary information about a value being used during code generation. Based on `ValueRef`, lazy loading and memory storage for native types have been implemented. Below are some of the main functions in the code generator tied to `ValueRef`:
 
 - `get_value_ref(const Address& p_address)`: Returns a reference to a `ValueRef`.
-- `try_alloc_variant_object(ValueRef& p_value)`: Allocates a `Variant` object for `ValueRef` if it hasn’t been allocated yet. For local values, allocation happens on the stack; for constants, the object is allocated in the `GDScriptFunction::constants` vector.
-- `emit_ptr_to_object(ValueRef& p_value)`: Generates code to obtain a pointer to a `Variant` object, which is allocated and constructed if it hasn’t been already.
+- `try_alloc_variant_object(ValueRef& p_value)`: Allocates a `Variant` object for `ValueRef` if it hasn't been allocated yet. For local values, allocation happens on the stack; for constants, the object is allocated in the `GDScriptFunction::constants` vector.
+- `emit_ptr_to_object(ValueRef& p_value)`: Generates code to obtain a pointer to a `Variant` object, which is allocated and constructed if it hasn't been already.
 - `emit_ptr_to_data(ValueRef& p_value)`: Similar to `emit_ptr_to_object(...)`, but generates code to obtain a pointer to the `Variant::_data` field.
 - `emit_cast_native(ValueRef& p_value, const Variant::Type p_target_type)`: Generates code for converting a value from one native type to another.
 - `emit_get_native(ValueRef& p_value)`: Generates code to retrieve a value for a native type `ValueRef`.
@@ -46,7 +46,7 @@ As mentioned in the previous post, I implemented the `ValueRef` structure, which
 
 # Small Example of the Result
 
-It’s still too early to compare or discuss performance, but here’s a small example of compiling simple GDScript code:
+It's still too early to compare or discuss performance, but here's a small example of compiling simple GDScript code:
 
 ```gd
 func _init():
@@ -145,13 +145,13 @@ mov rcx, rsp                 ; rcx = &variant_object
 mov qword ptr [rax], rcx     ; rax(p_args)[0] = rcx(&variant_object)
 ```
 
-It’s worth noting how cleverly `bunny-jit` reused `eax`, which contains the constant `2`. This matches both the value of `var i := 2` and the enumeration value `Variant::INT`.
+It's worth noting how cleverly `bunny-jit` reused `eax`, which contains the constant `2`. This matches both the value of `var i := 2` and the enumeration value `Variant::INT`.
 
 5. **`print` Call:**
 ```asm
 mov edx, 1                ; edx (p_args_count) = 1
 movabs r8, 0x55555d612230 ; r8 = function pointer
-xor edi, edi              ; rdi (p_ret) = nullptr (`print` doesn’t return a value)
+xor edi, edi              ; rdi (p_ret) = nullptr (`print` doesn't return a value)
 mov rsi, rax              ; rsi (p_args) = rax
 mov rax, r8
 call rax                  ; call: print(i)
@@ -181,7 +181,7 @@ The following tasks should be implemented:
 
 ## Accessing Fields
 
-This part seems relatively simple. It's enough to get type information and, if it's a *builtin* structure, implement access to the field via a pointer. To do this, it’s necessary to generate the corresponding information about the structure's fields and their types.
+This part seems relatively simple. It's enough to get type information and, if it's a *builtin* structure, implement access to the field via a pointer. To do this, it's necessary to generate the corresponding information about the structure's fields and their types.
 
 For example:  
 ```gd
@@ -204,7 +204,7 @@ However, there's a small caveat. `Vector3`, like `Vector4` and `Vector2`, contai
 
 ## Binary/Unary Operators
 
-I have already implemented code generation for binary/unary operators for native types like `bool`, `int64_t`, and `double` (aka `Variant::BOOL`, `Variant::INT`, and `Variant::FLOAT`). I achieved this manually, with some use of C++ templates and macros, and I hope it’s not overly verbose:
+I have already implemented code generation for binary/unary operators for native types like `bool`, `int64_t`, and `double` (aka `Variant::BOOL`, `Variant::INT`, and `Variant::FLOAT`). I achieved this manually, with some use of C++ templates and macros, and I hope it's not overly verbose:
 
 ```cpp
 template<typename L, typename R>
@@ -243,22 +243,22 @@ static BinaryOperatorCodeGenFunc binary_operators_table[Variant::VARIANT_MAX][Va
 
 This is somewhat similar to the operator table in the `Variant` class. So far, everything works, but writing all the necessary code for generating all possible operator combinations for different structures manually seems unpromising. Besides partial duplication of code, having numerous pointers to various functions means that all this code will end up in the final binary file, potentially increasing its size. This is due to GDScript's decision to crudely embed these standard types at a high level, which is beneficial for the VM but quite inconvenient for machine code generation. 
 
-It would be great to have something like an IR (Intermediate Representation) for GDScript, consisting of simpler operations, making it easier and more efficient to implement machine code generation. But that’s not the case, and we’ll have to deal with it.
+It would be great to have something like an IR (Intermediate Representation) for GDScript, consisting of simpler operations, making it easier and more efficient to implement machine code generation. But that's not the case, and we'll have to deal with it.
 
-So far, I haven’t come up with a good solution to this problem. It’s also necessary to decide whether each operator call should be inlined or if it’s better to make a regular function call. In the latter case, we may already have ready pointers to the required operators from C++ code, which is worth considering.
+So far, I haven't come up with a good solution to this problem. It's also necessary to decide whether each operator call should be inlined or if it's better to make a regular function call. In the latter case, we may already have ready pointers to the required operators from C++ code, which is worth considering.
 
 ## Native Methods Implementation
 
-By native methods implementation, I primarily mean using direct method calls without relying on the heavy API currently used by the VM (e.g., `MethodBind`, etc.). As I mentioned in my first post, there doesn’t seem to be a safe way in C++ (or am I mistaken?) to obtain the address of a member function of a given class or structure. Thus, it likely becomes necessary to implement custom versions of the required methods, either as regular static functions (and obtain their address) or generate the machine code for these methods directly via a code generator, which is even more resource-intensive. The latter option offers the advantage of applying a so-called `near call` (on x86-64) for function calls. Beyond this, it remains a headache. 
+By native methods implementation, I primarily mean using direct method calls without relying on the heavy API currently used by the VM (e.g., `MethodBind`, etc.). As I mentioned in my first post, there doesn't seem to be a safe way in C++ (or am I mistaken?) to obtain the address of a member function of a given class or structure. Thus, it likely becomes necessary to implement custom versions of the required methods, either as regular static functions (and obtain their address) or generate the machine code for these methods directly via a code generator, which is even more resource-intensive. The latter option offers the advantage of applying a so-called `near call` (on x86-64) for function calls. Beyond this, it remains a headache. 
 
-Since Godot doesn’t provide pointers to the methods themselves, but only pointers to certain wrappers (which typically accept either pointers to values or are heavy wrappers using `Variant`), every individual argument must be unpacked from `Variant`, passed to the method, and then the result, if any, is re-packed into a `Variant` object.
+Since Godot doesn't provide pointers to the methods themselves, but only pointers to certain wrappers (which typically accept either pointers to values or are heavy wrappers using `Variant`), every individual argument must be unpacked from `Variant`, passed to the method, and then the result, if any, is re-packed into a `Variant` object.
 
-This raises a broader question about the native implementation of any method calls in general, not just for `builtin` structures. This process doesn’t differ much from that of other native Godot classes. The only differences lie in scripts and other features, like extensions, which may require special handling and usually demand the use of the same "heavy" API.
+This raises a broader question about the native implementation of any method calls in general, not just for `builtin` structures. This process doesn't differ much from that of other native Godot classes. The only differences lie in scripts and other features, like extensions, which may require special handling and usually demand the use of the same "heavy" API.
 
-# That’s All for Now
+# That's All for Now
 
-For now, this is all I wanted to describe and share. I’ve achieved some results in generating code for native types such as `double`, `bool`, and `int64_t`. However, due to the high-level operations of GDScript, most functionality inevitably boils down to calling external functions that require constructing `Variant` objects and incurring other overheads. I believe these factors consume the majority of performance.
+For now, this is all I wanted to describe and share. I've achieved some results in generating code for native types such as `double`, `bool`, and `int64_t`. However, due to the high-level operations of GDScript, most functionality inevitably boils down to calling external functions that require constructing `Variant` objects and incurring other overheads. I believe these factors consume the majority of performance.
 
-In the end, I’ve been considering changes to the Core to provide a lightweight API for function calls—for example, directly via pointers with raw values as arguments instead of `Variant` objects.
+In the end, I've been considering changes to the Core to provide a lightweight API for function calls—for example, directly via pointers with raw values as arguments instead of `Variant` objects.
 
-That’s all for now. Next time, I plan to try addressing some of these issues or at least exploring possible solutions and attempting their implementation. The current implementation and all the code can still be found on [GitHub](https://github.com/bagggage/godot).
+That's all for now. Next time, I plan to try addressing some of these issues or at least exploring possible solutions and attempting their implementation. The current implementation and all the code can still be found on [GitHub](https://github.com/bagggage/godot).

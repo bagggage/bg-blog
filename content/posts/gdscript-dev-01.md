@@ -16,13 +16,13 @@ GDScript is currently a fairly feature-rich scripting language with various capa
 
 Thus, I decided to start a series of posts where I can share my ideas, research, and progress.
 
-# Let’s Get Started!
+# Let's Get Started!
 
 ## Code Generation Backend
 
 Developing a custom machine code generator from scratch feels unnecessary. It would demand significant time and effort, as bugs in code generation would inevitably lead to crashes, and the x86-64 instruction set alone is quite extensive. Moreover, full-fledged support would also require arm64 and potentially other instruction sets for various platforms.
 
-For this reason, integrating an existing, maintained backend is undoubtedly the more optimal choice for Godot. My first priority was to avoid large, heavyweight backends. While LLVM is the most popular and well-supported solution, it’s too heavy; its code generation backend alone outweighs the entire Godot project. GDScript could be faster, but at this stage, code optimization on the level of C++'s `-O2/-O3` might be overkill.
+For this reason, integrating an existing, maintained backend is undoubtedly the more optimal choice for Godot. My first priority was to avoid large, heavyweight backends. While LLVM is the most popular and well-supported solution, it's too heavy; its code generation backend alone outweighs the entire Godot project. GDScript could be faster, but at this stage, code optimization on the level of C++'s `-O2/-O3` might be overkill.
 
 Therefore, I explored lightweight, open-source, fast backends. Open-source backends also allow for contributions to improve optimization passes, instruction selection, and other aspects if needed.
 
@@ -31,7 +31,7 @@ Here are the options I considered:
 - [**MIR**](https://github.com/vnmakarov/mir): A lightweight alternative to LLVM, stable, and written entirely in C. (however, it might still be too large for Godot.)
 - [**asmjit**](https://github.com/asmjit/asmjit): The main drawback is that asmjit is an assembler for C++ without any intermediate representation (IR) or platform-independent API. This is a significant limitation for writing a cross-platform compiler.
 - [**sljit**](https://github.com/zherczeg/sljit): A platform-independent JIT compiler written in C, supporting SIMD, self-modifying code, and more. Definitely worth considering.
-- [**bunny-jit**](https://github.com/signaldust/bunny-jit): The lightest of all the options, though the youngest and perhaps the least feature-rich. Nonetheless, it’s very convenient, fully written in C++, and supports x86-64 and Aarch64.
+- [**bunny-jit**](https://github.com/signaldust/bunny-jit): The lightest of all the options, though the youngest and perhaps the least feature-rich. Nonetheless, it's very convenient, fully written in C++, and supports x86-64 and Aarch64.
 
 ---
 
@@ -39,7 +39,7 @@ I chose **bunny-jit** for my research and experiments. While **sljit** has more 
 
 ## GDScript Execution
 
-To better understand the task, here’s a brief overview of the key aspects I’ll be working with.
+To better understand the task, here's a brief overview of the key aspects I'll be working with.
 
 Currently, GDScript uses a stack-based virtual machine. The implementation essentially revolves around the method [`GDScriptFunction::call(...)`](https://github.com/godotengine/godot/blob/4ce466d7fa79e351d4295d5bb47e3266089c3a59/modules/gdscript/gdscript_vm.cpp#L473), which contains numerous macros. This is because the virtual machine is not a separate class, and for simplicity, repetitive code has been abstracted into macros that act like utility functions.
 
@@ -57,7 +57,7 @@ The main bottlenecks are the thick layers of abstraction wrapping native operato
 
 For instance, basic types like `Variant::INT`, `Variant::FLOAT`, and `Variant::BOOL` are manipulated through a unified, dynamic API. Nativeizing and generating machine code for these types would be a significant improvement. It would also be beneficial to have fully native implementations for type structures like `Vector2`, `Vector3`, `Rect2D`, `Quaternion`, etc. Although more complex, this is achievable without excessive effort.
 
-Let’s analyze a simpler example:
+Let's analyze a simpler example:
 
 ```gd
 var hf := 2.0

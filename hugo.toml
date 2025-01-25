@@ -1,7 +1,8 @@
 baseURL = 'https://bagggage.github.io/'
 languageCode = "en-us"
-title = "@bagggage-dev-blog"
+title = "@bag-dev-blog"
 theme = "archie"
+copyright = "Konstantin Pigulevskiy"
 
 [params]
     mode="dark"

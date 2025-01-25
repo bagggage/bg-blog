@@ -11,6 +11,10 @@ header .main {
     font-size: 1.8rem;
 }
 
+header .main a {
+    border: none;
+}
+
 footer {
     border-top-style: dashed;
 }
